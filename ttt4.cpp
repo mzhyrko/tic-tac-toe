@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include <iostream>
 using namespace std;
 
 void initBoard(char board[][3], int area) {
@@ -12,7 +12,12 @@ void initBoard(char board[][3], int area) {
 void printBoard(char board[][3], int area) {
     for (int i = 0; i < area; ++i) {
         for (int j = 0; j < area; ++j) {
-            cout << board[i][j];
+            if (board[i][j] == 'X')
+                cout << "\033[1;31m" << board[i][j] << "\033[0m";
+            else if (board[i][j] == 'O')
+                cout << "\033[1;34m" << board[i][j] << "\033[0m";
+            else
+                cout << board[i][j];
             if (j < area - 1) cout << " | ";
         }
         cout << endl;
@@ -55,18 +60,6 @@ bool isBoardFull(char board[][3], int area) {
     return true;
 }
 
-void switchPlayer(char currPlay) {
-    if(currPlay == 'X')
-    {
-        currPlay = 'O';
-    }
-
-    if(currPlay == 'O')
-    {
-        currPlay = 'X';
-    }
-}
-
 int main() {
 
     int input;
@@ -99,7 +92,15 @@ int main() {
             break;
         }
 
-        switchPlayer(currPlay);
+        if(currPlay == 'X')
+        {
+            currPlay = 'O';
+        }
+
+        else if(currPlay == 'O')
+        {
+            currPlay = 'X';
+        }
     }
 
     return 0;
