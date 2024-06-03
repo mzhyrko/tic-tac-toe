@@ -1,0 +1,70 @@
+Version 1: Terminal-Based Tic Tac Toe
+Goal: Create a simple Tic Tac Toe game that you can play in the terminal.
+
+Features:
+- A 3x3 grid where two players take turns.
+- Players are represented by 'X' and 'O'.
+- Players input their moves by typing the number of the cell they want to play in.
+- The game checks if moves are valid (not already taken and within bounds).
+- The game board is displayed after each move.
+- The game announces the winner or if it's a tie.
+
+------------------------------------------------------------------------------------
+
+Version 2: GUI-Based Tic Tac Toe App
+Goal: Make the game more user-friendly with a graphical interface.
+
+Features:
+- A 3x3 grid displayed in a window.
+- Players click on cells to make their moves.
+- The game board updates graphically after each move.
+- The game announces the winner or if it's a tie.
+- There is an option to restart the game.
+
+------------------------------------------------------------------------------------
+
+Version 3: n x n Grid Tic Tac Toe
+Goal: Allow players to play on different sized grids.
+
+Features:
+- Players can choose the size of the grid (like 4x4, 5x5, etc.).
+- The game rules adjust to require a line of 'n' marks to win.
+- The rest of the game functions remain the same.
+
+------------------------------------------------------------------------------------
+
+Version 4: AI Opponent
+Goal: Add an AI so players can play against the computer.
+
+Features:
+- Players can choose to play against another human or the computer.
+- Different difficulty levels for the AI:
+  - Easy: The AI makes random moves.
+  - Medium: The AI makes somewhat strategic moves.
+  - Hard: The AI uses the best strategy to win (like the Minimax algorithm).
+- The game continues to display the board and announce the winner or a tie.
+
+------------------------------------------------------------------------------------
+
+Version 5: Online Multiplayer
+Goal: Allow players to play against each other over the internet.
+
+Features:
+- Players can host a game or join an existing one.
+- The game updates in real-time for both players.
+- Players can chat with each other while playing.
+- The game board and functionality remain the same.
+
+------------------------------------------------------------------------------------
+
+Version 6: Points System
+Goal: Track player performance and introduce a points system.
+
+Features:
+- Players have profiles with unique usernames.
+- Points are awarded based on wins, losses, and ties.
+- A leaderboard shows the top players.
+- Game results and player points are saved.
+- The game continues to display the board and announce the winner or a tie.
+
+
