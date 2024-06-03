@@ -55,15 +55,15 @@ bool isBoardFull(char board[][3], int area) {
     return true;
 }
 
-void switchPlayer(char &currPlay) {
+void switchPlayer(char currPlay) {
     if(currPlay == 'X')
     {
         currPlay = 'O';
     }
 
-    if(currPlay == '0')
+    if(currPlay == 'O')
     {
-        currPlay = 'x';
+        currPlay = 'X';
     }
 }
 
