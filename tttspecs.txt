@@ -11,19 +11,7 @@ Features:
 
 ------------------------------------------------------------------------------------
 
-Version 2: GUI-Based Tic Tac Toe App
-Goal: Make the game more user-friendly with a graphical interface.
-
-Features:
-- A 3x3 grid displayed in a window.
-- Players click on cells to make their moves.
-- The game board updates graphically after each move.
-- The game announces the winner or if it's a tie.
-- There is an option to restart the game.
-
-------------------------------------------------------------------------------------
-
-Version 3: n x n Grid Tic Tac Toe
+Version 2: n x n Grid Tic Tac Toe
 Goal: Allow players to play on different sized grids.
 
 Features:
@@ -33,7 +21,7 @@ Features:
 
 ------------------------------------------------------------------------------------
 
-Version 4: AI Opponent
+Version 3: AI Opponent
 Goal: Add an AI so players can play against the computer.
 
 Features:
@@ -43,6 +31,18 @@ Features:
   - Medium: The AI makes somewhat strategic moves.
   - Hard: The AI uses the best strategy to win (like the Minimax algorithm).
 - The game continues to display the board and announce the winner or a tie.
+
+------------------------------------------------------------------------------------
+
+Version 4: GUI-Based Tic Tac Toe App
+Goal: Make the game more user-friendly with a graphical interface.
+
+Features:
+- A 3x3 grid displayed in a window.
+- Players click on cells to make their moves.
+- The game board updates graphically after each move.
+- The game announces the winner or if it's a tie.
+- There is an option to restart the game.
 
 ------------------------------------------------------------------------------------
 
