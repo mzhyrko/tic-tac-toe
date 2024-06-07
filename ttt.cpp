@@ -21,11 +21,19 @@ void initBoard(vector<vector<string>> &board, int boardSize) {
 void printBoard(const vector<vector<string>> &board, int boardSize, int lineForWin) {
     for (int i = 0; i < boardSize; ++i) {
         for (int j = 0; j < boardSize; ++j) {
-            cout << board[i][j];
+            //cout << board[i][j];
+            //if (j < boardSize - 1) cout << " | ";
+
+            if (board[i][j] == "X")
+                cout << "\033[1;31m" << board[i][j] << "\033[0m";
+            else if (board[i][j] == "O")
+                cout << "\033[1;34m" << board[i][j] << "\033[0m";
+            else
+                cout << board[i][j];
             if (j < boardSize - 1) cout << " | ";
         }
         cout << endl;
-        if (i < boardSize - 1) cout << string(boardSize * boardSize - lineForWin, '-') << endl;
+        if (i < boardSize - 1) cout << string(boardSize * boardSize, '-') << endl;
     }
 }
 
@@ -506,10 +514,20 @@ bool isNumber(string inpStr){
 
 void game(){   
     int input;
-    int boardSize = 4;
-    int lineForWin = 3;
+    int boardSize;
+    int lineForWin;
     vector<vector<string>> board;
     char currPlay = 'X';
+
+    cout << "Board size (3 - 19): " << endl;
+    cin >> boardSize;
+
+    if(boardSize <= 5)
+        lineForWin = 3;
+    if(boardSize <= 14 && boardSize > 5)
+        lineForWin = 4;
+    if(boardSize <= 19 && boardSize > 14)
+        lineForWin = 5;
 
     initBoard(board, boardSize);
     printBoard(board, boardSize, lineForWin);
