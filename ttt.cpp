@@ -7,15 +7,25 @@ using namespace std;
 
 void initBoardSize(int &boardSize, int &lineForWin)
 {
-    cout << "Board size (3 - 19): " << endl;
+    cout << "Board size (3 - 1024): " << endl;
     cin >> boardSize;
 
-    if(boardSize <= 5)
+    if(boardSize < 3 || boardSize > 1024) {
+        cout << "Invalid board size. Please enter a value between 3 and 1024." << endl;
+        return;
+    }
+
+    if (boardSize <= 3) {
         lineForWin = 3;
-    if(boardSize <= 14 && boardSize > 5)
+    } else if (boardSize <= 5) {
+        lineForWin = 3;
+    } else if (boardSize <= 14) {
         lineForWin = 4;
-    if(boardSize <= 19 && boardSize > 14)
+    } else if (boardSize <= 19) {
         lineForWin = 5;
+    } else {
+        lineForWin = 5 + ceil((boardSize - 19) / 20.0);
+    }
 }
 
 
