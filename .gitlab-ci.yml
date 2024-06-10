@@ -1,0 +1,51 @@
+image: debian:latest
+
+stages:
+  - build
+  - test
+  - deploy
+
+job 1:
+  stage: build
+  script:
+   - apt-get update && apt-get install -y g++
+   - g++ ttt.cpp
+  artifacts:
+    untracked: true
+
+job 2_1:
+  stage: test
+  script:
+  - echo "Imaginable body of test_1"
+  artifacts:
+    untracked: true
+
+
+job 2_2:
+  stage: test
+  script:
+  # install dependencies for test_2
+  - apt-get update && apt-get install -y wget
+  # implementation for test_2
+  - echo "Imaginable body of test_2"
+  artifacts:
+    untracked: true
+
+job 2_3:
+  stage: test
+  script:
+  - echo "Imaginable body of test_3"
+  artifacts:
+    untracked: true
+
+job 3:
+  stage: deploy
+  script:
+   - echo "Just pack artifacts"
+  artifacts:
+    paths:
+    # save artifacts of your build but only for 1 day. for example - your binary
+    - ./ttt
+
+    expire_in: 1 day 
+  when: manual
