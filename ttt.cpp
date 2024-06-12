@@ -46,24 +46,72 @@ void initBoard(vector<vector<string>> &board, int boardSize) {
 }
 
 
-void selectGameMode(int &selectMode, string &PlayerIdent)
+void selectGameMode(int &selectMode, string &firstOpponent, string &secondOpponent)
 {
+    int localInput;
+
     cout << "Game mods:" << endl;
-    cout << "1 - Man vs Man" << endl;
-    cout << "2 - Man vs Random bot" << endl;
-    cout << "3 - Random bot vs Random bot" << endl;
+    cout << "1 - Human vs Human" << endl;
+    cout << "2 - Human vs Bot" << endl;
+    cout << "3 - Bot vs Bot" << endl;
     cout << "Select game mode: ";
 
     cin >> selectMode;
 
     if(selectMode ==  1)
-        PlayerIdent = "man";
+    {
+        firstOpponent = "man";
+    }
 
     if(selectMode ==  2)
-        PlayerIdent = "man";
+    {
+        firstOpponent = "man";
+
+        cout << "Select bot type: " << endl;
+        cout << "1 - Random move bot" << endl;
+        cout << "2 - Beginner bot" << endl;
+        cout << "Select bot type: ";
+        cin >> localInput;
+        if(localInput == 1 )
+        {
+            secondOpponent = "rbot";
+        }
+        else if(localInput == 2)
+        {
+            secondOpponent = "bbot";
+        }
+    }
 
     if(selectMode ==  3)
-        PlayerIdent = "rbot";
+    {
+        cout << "Select first bot:" << endl;
+        cout << "1 - Random move bot" << endl;
+        cout << "2 - Beginner bot" << endl;
+
+        cin >> localInput;
+
+        if(localInput == 1){
+            firstOpponent = "rbot";
+        }
+        else if(localInput == 2){
+            firstOpponent = "bbot";
+        }
+
+
+
+        cout << "Select second bot:" << endl;
+        cout << "1 - Random move bot" << endl;
+        cout << "2 - Beginner bot" << endl;
+
+        cin >> localInput;
+
+        if(localInput == 1){
+            secondOpponent = "rbot";
+        }
+        else if(localInput == 2){
+            secondOpponent = "bbot";
+        }
+    }
 }
 
 
@@ -99,18 +147,18 @@ bool isValidMove(const vector<vector<string>> &board, int boardSize, int input) 
 }
 
 
-void insertMove(vector<vector<string>> &board, int boardSize, int input, char currSign) {
+void insertMove(vector<vector<string>> &board, int boardSize, int input, string currSign) {
     int row = (input - 1) / boardSize;
     int col = (input - 1) % boardSize;
     board[row][col] = currSign;
 }
 
 
-bool columnsCheckWin(const vector<vector<string>> &board, int boardSize, char currSign, int lineForWin, int i, int j){
+bool columnsCheckWin(const vector<vector<string>> &board, int boardSize, string currSign, int lineForWin, int i, int j){
     for (int x = 0; x < lineForWin; x++) {
             bool rowWin = true;
             for (int y = 0; y < lineForWin; y++) {
-                if (board[i + x][j + y][0] != currSign) {
+                if (board[i + x][j + y] != currSign) {
                     rowWin = false;
                     break;
                 }
@@ -121,11 +169,11 @@ bool columnsCheckWin(const vector<vector<string>> &board, int boardSize, char cu
     return false;
 }
 
-bool rowsCheckWin(const vector<vector<string>> &board, int boardSize, char currSign, int lineForWin, int i, int j){
+bool rowsCheckWin(const vector<vector<string>> &board, int boardSize, string currSign, int lineForWin, int i, int j){
     for (int y = 0; y < lineForWin; y++) {
         bool colWin = true;
         for (int x = 0; x < lineForWin; x++){
-            if (board[i + x][j + y][0] != currSign) {
+            if (board[i + x][j + y] != currSign) {
                 colWin = false;
                 break;
             }
@@ -136,10 +184,10 @@ bool rowsCheckWin(const vector<vector<string>> &board, int boardSize, char currS
     return false;
 }
 
-bool mainDiagonalCheckWin(const vector<vector<string>> &board, int boardSize, char currSign, int lineForWin, int i, int j){
+bool mainDiagonalCheckWin(const vector<vector<string>> &board, int boardSize, string currSign, int lineForWin, int i, int j){
     bool diagWin1 = true;
     for (int x = 0; x < lineForWin; x++) {
-        if (board[i + x][j + x][0] != currSign) {
+        if (board[i + x][j + x] != currSign) {
             diagWin1 = false;
             break;
         }
@@ -150,10 +198,10 @@ bool mainDiagonalCheckWin(const vector<vector<string>> &board, int boardSize, ch
     return false;
 }
 
-bool antiDiagonalCheckWin(const vector<vector<string>> &board, int boardSize, char currSign, int lineForWin, int i, int j){
+bool antiDiagonalCheckWin(const vector<vector<string>> &board, int boardSize, string currSign, int lineForWin, int i, int j){
     bool diagWin2 = true;
     for (int x = 0; x < lineForWin; x++) {
-        if (board[i + x][j + lineForWin - 1 - x][0] != currSign) {
+        if (board[i + x][j + lineForWin - 1 - x] != currSign) {
             diagWin2 = false;
             break;
         }
@@ -163,7 +211,7 @@ bool antiDiagonalCheckWin(const vector<vector<string>> &board, int boardSize, ch
     return false;
 }
 
-bool checkWin(const vector<vector<string>> &board, int boardSize, char currSign, int lineForWin) {
+bool checkWin(const vector<vector<string>> &board, int boardSize, string currSign, int lineForWin) {
     for (int i = 0; i <= boardSize - lineForWin; i++) {
         for (int j = 0; j <= boardSize - lineForWin; j++) {
 
@@ -187,7 +235,7 @@ void testsCheckWin(){
     vector<vector<string>> boardTest;
     int boardSizeTest;
     int lineForWinTest;
-    char currSignTest;
+    string currSignTest;
 
     // 3x3 Board with Winning Line of 3 Cells
     // Test 1: Horizontal win in the first row
@@ -538,43 +586,48 @@ bool isBoardFull(const vector<vector<string>> &board, int boardSize) {
 }
 
 
-void changeSign(char &currSign) {
+void changeSign(string &currSign) {
 
-    if(currSign == 'X'){
-        currSign = 'O';
+    if(currSign == "X"){
+        currSign = "O";
     }
     else{
-        currSign = 'X';
+        currSign = "X";
     }
 
 
 }
 
-void changePlayer(int &selectMode, string &PlayerIdent){
+/*
+void changePlayer(int &selectMode, string &firstOpponent, string &secondOpponent){
     if(selectMode == 1)
     {
-        PlayerIdent = "man";
+        firstOpponent = "man";
     }
 
     if(selectMode == 2)
     {
-        if(PlayerIdent == "man")
+        if(firstOpponent == "man")
         {
-            PlayerIdent = "rbot";
+            firstOpponent = "rbot";
         }
 
-        else if(PlayerIdent == "rbot")
+        else if(firstOpponent == "rbot")
         {
-            PlayerIdent = "man";
+            firstOpponent = "man";
         }
     }
 
     if(selectMode == 3)
     {
-        PlayerIdent = "rbot";
+        firstOpponent = "rbot";
     }
 }
+*/
 
+void changePlayer(int &selectMode, string &firstOpponent, string &secondOpponent){
+    swap(firstOpponent, secondOpponent);
+}
 
 bool isNumber(string inpStr){
     for (char c : inpStr) {
@@ -586,7 +639,7 @@ bool isNumber(string inpStr){
 }
 
 
-void randomBot(int boardSize, string &inpStr, char currSign, vector<vector<string>> &board){
+void randomBot(int boardSize, string &inpStr, string currSign, vector<vector<string>> &board){
     int r;
     srand(time(NULL));
     while(true)
@@ -595,19 +648,76 @@ void randomBot(int boardSize, string &inpStr, char currSign, vector<vector<strin
         if(isValidMove(board, boardSize, r))
             break;
     }
-
-    cout << "Random bot " << currSign << " entered move: " << r << endl;
     inpStr = to_string(r);
 }
 
+void beginnerBot(string &inpStr, string currSign, int boardSize, int lineForWin, vector<vector<string>> &board) {
+    int maxScore = -1;
+    int bestMove[2];
+    bestMove[0] = -1;
+    bestMove[1] = -1;
 
-void makeMove(string &inpStr, string PlayerIdent, char currSign, int boardSize, int lineForWin, vector<vector<string>> &board){
+    for (int i = 0; i < boardSize; ++i) {
+        for (int j = 0; j < boardSize; ++j) {
+            if (board[i][j] != "X" && board[i][j] != "O") {
+                int score = 0;
 
-    if(PlayerIdent == "rbot"){
-        randomBot(boardSize, inpStr, currSign, board);
+                for (int k = 0; k < boardSize; ++k) {
+                    if (board[i][k] == currSign) {
+                        score++;
+                    }
+                }
+
+
+                for (int k = 0; k < boardSize; ++k) {
+                    if (board[k][j] == currSign) {
+                        score++;
+                    }
+                }
+
+
+                for (int k = 0; k < boardSize; ++k) {
+                    if (i + k < boardSize && j + k < boardSize && board[i + k][j + k] == currSign) {
+                        score++;
+                    }
+                }
+
+
+                for (int k = 0; k < boardSize; ++k) {
+                    if (i + k < boardSize && j - k >= 0 && board[i + k][j - k] == currSign) {
+                        score++;
+                    }
+                }
+
+
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestMove[0] = i;
+                    bestMove[1] = j;
+                }
+            }
+        }
     }
 
-    if(PlayerIdent == "man"){
+    if (bestMove[0] != -1 && bestMove[1] != -1) {
+        inpStr = to_string(bestMove[0] * boardSize + bestMove[1] + 1);
+    }
+}
+
+
+void makeMove(string &inpStr, string firstOpponent, string currSign, int boardSize, int lineForWin, vector<vector<string>> &board){
+
+    if(firstOpponent == "rbot"){
+        randomBot(boardSize, inpStr, currSign, board);
+        cout << "Random bot " << currSign << " entered move: " << inpStr << endl;
+    }
+
+    if(firstOpponent == "bbot"){
+        beginnerBot(inpStr, currSign, boardSize, lineForWin, board);
+        cout << "Beginner bot " << currSign << " entered move: " << inpStr << endl;
+    }
+
+    if(firstOpponent == "man"){
         cout << "Player " << currSign << ", enter your move: ";
         cin >> inpStr;
     }
@@ -620,13 +730,14 @@ void game(){
     int boardSize;
     int lineForWin;
     int selectMode;
-    char currSign = 'X';
+    string currSign = "X";
     string inpStr;
-    string PlayerIdent = "man";
+    string firstOpponent;
+    string secondOpponent;
     vector<vector<string>> board;
 
     initBoardSize(boardSize, lineForWin);
-    selectGameMode(selectMode, PlayerIdent);
+    selectGameMode(selectMode, firstOpponent, secondOpponent);
     initBoard(board, boardSize);
     printBoard(board, boardSize, lineForWin);
 
@@ -635,7 +746,7 @@ void game(){
         //cout << "Player " << currSign << ", enter your move: ";
         //cin >> inpStr;
 
-        makeMove(inpStr, PlayerIdent, currSign,  boardSize, lineForWin, board);
+        makeMove(inpStr, firstOpponent, currSign,  boardSize, lineForWin, board);
 
         if(isNumber(inpStr) == false){
             continue;
@@ -662,10 +773,11 @@ void game(){
         }
 
         changeSign(currSign);
-        changePlayer(selectMode, PlayerIdent);
+        changePlayer(selectMode, firstOpponent, secondOpponent);
 
     }
 }
+
 
 int main() {
 
