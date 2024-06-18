@@ -70,6 +70,7 @@ void selectGameMode(int &selectMode, string &firstOpponent, string &secondOppone
         cout << "Select bot type: " << endl;
         cout << "1 - Random move bot" << endl;
         cout << "2 - Beginner bot" << endl;
+        cout << "3 - Advanced bot" << endl;
         cout << "Select bot type: ";
         cin >> localInput;
         if(localInput == 1 )
@@ -80,6 +81,10 @@ void selectGameMode(int &selectMode, string &firstOpponent, string &secondOppone
         {
             secondOpponent = "bbot";
         }
+        else if(localInput == 3)
+        {
+            secondOpponent = "abot";
+        }
     }
 
     if(selectMode ==  3)
@@ -87,6 +92,8 @@ void selectGameMode(int &selectMode, string &firstOpponent, string &secondOppone
         cout << "Select first bot:" << endl;
         cout << "1 - Random move bot" << endl;
         cout << "2 - Beginner bot" << endl;
+        cout << "3 - Advanced bot" << endl;
+
 
         cin >> localInput;
 
@@ -96,12 +103,16 @@ void selectGameMode(int &selectMode, string &firstOpponent, string &secondOppone
         else if(localInput == 2){
             firstOpponent = "bbot";
         }
-
+        else if(localInput == 3)
+        {
+            firstOpponent = "abot";
+        }
 
 
         cout << "Select second bot:" << endl;
         cout << "1 - Random move bot" << endl;
         cout << "2 - Beginner bot" << endl;
+        cout << "3 - Advanced bot" << endl;
 
         cin >> localInput;
 
@@ -110,6 +121,10 @@ void selectGameMode(int &selectMode, string &firstOpponent, string &secondOppone
         }
         else if(localInput == 2){
             secondOpponent = "bbot";
+        }
+        else if(localInput == 3)
+        {
+            secondOpponent = "abot";
         }
     }
 }
@@ -231,349 +246,16 @@ bool checkWin(const vector<vector<string>> &board, int boardSize, string currSig
     return false;
 }
 
-void testsCheckWin(){
-    vector<vector<string>> boardTest;
-    int boardSizeTest;
-    int lineForWinTest;
-    string currSignTest;
-
-    // 3x3 Board with Winning Line of 3 Cells
-    // Test 1: Horizontal win in the first row
-    boardSizeTest = 3;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "X", "X"},
-                 {"O", "O", "1"},
-                 {"2", "3", "4"}};
-    cout << "Test 1:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
+bool checkDraw(vector<vector<string>> &board, int boardSize) {
+    for (int i = 0; i < boardSize; i++) {
+        for (int j = 0; j < boardSize; j++) {
+            if (board[i][j] != "X" && board[i][j] != "O") {
+                return false;
+            }
+        }
     }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 2: Vertical win in the first column
-    boardSizeTest = 3;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3"},
-                 {"X", "O", "O"},
-                 {"X", "4", "5"}};
-    cout << "Test 2:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 3: Diagonal win from top-left to bottom-right
-    boardSizeTest = 3;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3"},
-                 {"O", "X", "O"},
-                 {"4", "5", "X"}};
-    cout << "Test 3:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 4: Diagonal win from bottom-left to top-right
-    boardSizeTest = 3;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"4", "2", "X"},
-                 {"3", "X", "O"},
-                 {"X", "5", "O"}};
-    cout << "Test 4:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // 4x4 Board with Winning Line of 3 Cells
-    // Test 5: Horizontal win in the first row
-    boardSizeTest = 4;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "X", "X", "4"},
-                 {"O", "O", "1", "2"},
-                 {"2", "3", "4", "5"},
-                 {"6", "7", "8", "9"}};
-    cout << "Test 5:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 6: Vertical win in the first column
-    boardSizeTest = 4;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4"},
-                 {"X", "O", "O", "5"},
-                 {"X", "4", "5", "6"},
-                 {"2", "7", "8", "9"}};
-    cout << "Test 6:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 7: Diagonal win from top-left to bottom-right
-    boardSizeTest = 4;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4"},
-                 {"O", "X", "O", "5"},
-                 {"4", "5", "X", "6"},
-                 {"6", "7", "8", "9"}};
-    cout << "Test 7:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 8: Diagonal win from bottom-left to top-right
-    boardSizeTest = 4;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"4", "2", "X", "4"},
-                 {"3", "X", "O", "5"},
-                 {"X", "4", "5", "6"},
-                 {"6", "7", "8", "9"}};
-    cout << "Test 8:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // 4x4 Board with Winning Line of 4 Cells
-    // Test 9: Horizontal win in the first row
-    boardSizeTest = 4;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"X", "X", "X", "X"},
-                 {"O", "O", "1", "2"},
-                 {"2", "3", "4", "5"},
-                 {"6", "7", "8", "9"}};
-    cout << "Test 9:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 10: Vertical win in the first column
-    boardSizeTest = 4;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4"},
-                 {"X", "O", "O", "5"},
-                 {"X", "4", "5", "6"},
-                 {"X", "7", "8", "9"}};
-    cout << "Test 10:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 11: Diagonal win from top-left to bottom-right
-    boardSizeTest = 4;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4"},
-                 {"O", "X", "O", "5"},
-                 {"4", "5", "X", "6"},
-                 {"6", "7", "8", "X"}};
-    cout << "Test 11:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 12: Diagonal win from bottom-left to top-right
-    boardSizeTest = 4;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"6", "7", "8", "X"},
-                 {"3", "4", "X", "2"},
-                 {"2", "X", "3", "1"},
-                 {"X", "O", "O", "4"}};
-    cout << "Test 12:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // 5x5 Board with Winning Line of 3 Cells
-    // Test 13: Horizontal win in the first row
-    boardSizeTest = 5;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "X", "X", "4", "5"},
-                 {"O", "O", "1", "2", "3"},
-                 {"2", "3", "4", "5", "6"},
-                 {"6", "7", "8", "9", "10"},
-                 {"11", "12", "13", "14", "15"}};
-    cout << "Test 13:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 14: Vertical win in the first column
-    boardSizeTest = 5;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4", "5"},
-                 {"X", "O", "O", "6", "7"},
-                 {"X", "4", "5", "8", "9"},
-                 {"2", "6", "7", "10", "11"},
-                 {"12", "13", "14", "15", "16"}};
-    cout << "Test 14:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 15: Diagonal win from top-left to bottom-right
-    boardSizeTest = 5;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4", "5"},
-                 {"O", "X", "O", "6", "7"},
-                 {"4", "5", "X", "8", "9"},
-                 {"6", "7", "8", "10", "11"},
-                 {"12", "13", "14", "15", "16"}};
-    cout << "Test 15:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 16: Diagonal win from bottom-left to top-right
-    boardSizeTest = 5;
-    lineForWinTest = 3;
-    currSignTest = 'X';
-    boardTest = {{"12", "13", "14", "15", "X"},
-                 {"11", "10", "9", "X", "8"},
-                 {"8", "X", "5", "4", "3"},
-                 {"6", "7", "O", "2", "1"},
-                 {"O", "O", "O", "O", "O"}};
-    cout << "Test 16:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // 5x5 Board with Winning Line of 4 Cells
-    // Test 17: Horizontal win in the first row
-    boardSizeTest = 5;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"X", "X", "X", "X", "5"},
-                 {"O", "O", "1", "2", "3"},
-                 {"2", "3", "4", "5", "6"},
-                 {"6", "7", "8", "9", "10"},
-                 {"11", "12", "13", "14", "15"}};
-    cout << "Test 17:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 18: Vertical win in the first column
-    boardSizeTest = 5;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4", "5"},
-                 {"X", "O", "O", "6", "7"},
-                 {"X", "4", "5", "8", "9"},
-                 {"X", "6", "7", "10", "11"},
-                 {"12", "13", "14", "15", "16"}};
-    cout << "Test 18:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 19: Diagonal win from top-left to bottom-right
-    boardSizeTest = 5;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"X", "2", "3", "4", "5"},
-                 {"O", "X", "O", "6", "7"},
-                 {"4", "5", "X", "8", "9"},
-                 {"6", "7", "8", "X", "11"},
-                 {"12", "13", "14", "15", "16"}};
-    cout << "Test 19:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // Test 20: Diagonal win from bottom-left to top-right
-    boardSizeTest = 5;
-    lineForWinTest = 4;
-    currSignTest = 'X';
-    boardTest = {{"12", "13", "14", "15", "X"},
-                 {"11", "10", "9", "X", "8"},
-                 {"8", "X", "5", "4", "3"},
-                 {"X", "7", "O", "2", "1"},
-                 {"O", "O", "O", "O", "O"}};
-    cout << "Test 20:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
-
-    // 15x15 Board with Winning Line of 5 Cells
-    // Test 21: Horizontal win in the first row
-    boardSizeTest = 15;
-    lineForWinTest = 5;
-    currSignTest = 'X';
-    boardTest = {{"X", "X", "X", "X", "X", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"},
-                 {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"}};
-    cout << "Test 21:" << endl;
-    for (const auto& row : boardTest) {
-        for (const auto& cell : row) cout << cell << " ";
-        cout << endl;
-    }
-    cout << (checkWin(boardTest, boardSizeTest, currSignTest, lineForWinTest) ? "True" : "False") << endl;
+    return true;
 }
-
 
 bool isBoardFull(const vector<vector<string>> &board, int boardSize) {
     for (int i = 0; i < boardSize; ++i) {
@@ -597,33 +279,6 @@ void changeSign(string &currSign) {
 
 
 }
-
-/*
-void changePlayer(int &selectMode, string &firstOpponent, string &secondOpponent){
-    if(selectMode == 1)
-    {
-        firstOpponent = "man";
-    }
-
-    if(selectMode == 2)
-    {
-        if(firstOpponent == "man")
-        {
-            firstOpponent = "rbot";
-        }
-
-        else if(firstOpponent == "rbot")
-        {
-            firstOpponent = "man";
-        }
-    }
-
-    if(selectMode == 3)
-    {
-        firstOpponent = "rbot";
-    }
-}
-*/
 
 void changePlayer(int &selectMode, string &firstOpponent, string &secondOpponent){
     swap(firstOpponent, secondOpponent);
@@ -704,8 +359,77 @@ void beginnerBot(string &inpStr, string currSign, int boardSize, int lineForWin,
     }
 }
 
+int minimax(vector<vector<string>> &board, int boardSize, int lineForWin, bool isMax, string botSign, string playerSign, int depth, int maxDepth) {
+    if (checkWin(board, boardSize, botSign, lineForWin)) return 10 - depth;;
+    if (checkWin(board, boardSize, playerSign, lineForWin)) return depth - 10;
+    if (checkDraw(board, boardSize)) return 0;
 
-void makeMove(string &inpStr, string firstOpponent, string currSign, int boardSize, int lineForWin, vector<vector<string>> &board){
+    if (isMax == true) {
+       
+        int best = -1000;
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                if (board[i][j] != "X" && board[i][j] != "O") {
+                    string temp = board[i][j];
+                    board[i][j] = botSign;
+                    best = max(best, minimax(board, boardSize, lineForWin, !isMax, botSign, playerSign, depth+1, maxDepth));
+                    
+                    board[i][j] = temp;
+                }
+            }
+        }
+        return best;
+    } else {
+        int best = 1000;
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                if (board[i][j] != "X" && board[i][j] != "O") {
+                    
+                    string temp = board[i][j];
+                    board[i][j] = playerSign;
+                    
+                    best = min(best, minimax(board, boardSize, lineForWin, !isMax, botSign, playerSign, depth+1, maxDepth));
+                    
+                    board[i][j] = temp;
+                }
+            }
+        }
+        return best;
+    }
+}
+
+void dpTTToeBot(vector<vector<string>> &board, int boardSize, int lineForWin, string botSign, string &inpStr, int maxDepth) {
+    int bestVal = -1000;
+    int bestMove[2];
+    string playerSign = (botSign == "X") ? "O" : "X";
+    bestMove[0] = -1;
+    bestMove[1] = -1;
+
+    for (int i = 0; i < boardSize; i++) {
+        for (int j = 0; j < boardSize; j++) {
+            if (board[i][j] != "X" && board[i][j] != "O") {
+                
+                string temp = board[i][j];
+                board[i][j] = botSign;
+                
+                int moveVal = minimax(board, boardSize, lineForWin, false, botSign, playerSign, 0, maxDepth);
+        
+                board[i][j] = temp;
+
+                
+                if (moveVal > bestVal) {
+                    bestMove[0] = i; 
+                    bestMove[1] = j;
+                    bestVal = moveVal;
+                }
+            }
+        }
+    }
+    inpStr = to_string(bestMove[0] * boardSize + bestMove[1] + 1);
+}
+
+
+void makeMove(string &inpStr, string firstOpponent, string currSign, int boardSize, int lineForWin, vector<vector<string>> &board, int maxDepth){
 
     if(firstOpponent == "rbot"){
         randomBot(boardSize, inpStr, currSign, board);
@@ -715,6 +439,11 @@ void makeMove(string &inpStr, string firstOpponent, string currSign, int boardSi
     if(firstOpponent == "bbot"){
         beginnerBot(inpStr, currSign, boardSize, lineForWin, board);
         cout << "Beginner bot " << currSign << " entered move: " << inpStr << endl;
+    }
+
+    if(firstOpponent == "abot"){
+        dpTTToeBot(board, boardSize, lineForWin, firstOpponent, inpStr, maxDepth);
+        cout << "Advanced bot " << currSign << " entered move: " << inpStr << endl;
     }
 
     if(firstOpponent == "man"){
@@ -730,10 +459,11 @@ void game(){
     int boardSize;
     int lineForWin;
     int selectMode;
+    int maxDepth = 6;
     string currSign = "X";
     string inpStr;
-    string firstOpponent;
-    string secondOpponent;
+    string firstOpponent = "man";
+    string secondOpponent = "man";
     vector<vector<string>> board;
 
     initBoardSize(boardSize, lineForWin);
@@ -746,7 +476,7 @@ void game(){
         //cout << "Player " << currSign << ", enter your move: ";
         //cin >> inpStr;
 
-        makeMove(inpStr, firstOpponent, currSign,  boardSize, lineForWin, board);
+        makeMove(inpStr, firstOpponent, currSign,  boardSize, lineForWin, board, maxDepth);
 
         if(isNumber(inpStr) == false){
             continue;
@@ -782,7 +512,6 @@ void game(){
 int main() {
 
     game();
-    //testsCheckWin();
 
     return 0;
 }
