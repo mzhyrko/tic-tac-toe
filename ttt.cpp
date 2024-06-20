@@ -360,20 +360,18 @@ void beginnerBot(string &inpStr, string currSign, int boardSize, int lineForWin,
 }
 
 int minimax(vector<vector<string>> &board, int boardSize, int lineForWin, bool isMax, string botSign, string playerSign, int depth, int maxDepth) {
-    if (checkWin(board, boardSize, botSign, lineForWin)) return 10 - depth;;
+    if (checkWin(board, boardSize, botSign, lineForWin)) return 10 - depth;
     if (checkWin(board, boardSize, playerSign, lineForWin)) return depth - 10;
     if (checkDraw(board, boardSize)) return 0;
 
-    if (isMax == true) {
-       
+    if (isMax) {
         int best = -1000;
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
                 if (board[i][j] != "X" && board[i][j] != "O") {
                     string temp = board[i][j];
                     board[i][j] = botSign;
-                    best = max(best, minimax(board, boardSize, lineForWin, !isMax, botSign, playerSign, depth+1, maxDepth));
-                    
+                    best = max(best, minimax(board, boardSize, lineForWin, !isMax, botSign, playerSign, depth + 1, maxDepth));
                     board[i][j] = temp;
                 }
             }
@@ -384,12 +382,9 @@ int minimax(vector<vector<string>> &board, int boardSize, int lineForWin, bool i
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
                 if (board[i][j] != "X" && board[i][j] != "O") {
-                    
                     string temp = board[i][j];
                     board[i][j] = playerSign;
-                    
-                    best = min(best, minimax(board, boardSize, lineForWin, !isMax, botSign, playerSign, depth+1, maxDepth));
-                    
+                    best = min(best, minimax(board, boardSize, lineForWin, !isMax, botSign, playerSign, depth + 1, maxDepth));
                     board[i][j] = temp;
                 }
             }
@@ -400,33 +395,48 @@ int minimax(vector<vector<string>> &board, int boardSize, int lineForWin, bool i
 
 void dpTTToeBot(vector<vector<string>> &board, int boardSize, int lineForWin, string botSign, string &inpStr, int maxDepth) {
     int bestVal = -1000;
-    int bestMove[2];
+    int bestMove[2] = {-1, -1};
     string playerSign = (botSign == "X") ? "O" : "X";
-    bestMove[0] = -1;
-    bestMove[1] = -1;
 
     for (int i = 0; i < boardSize; i++) {
         for (int j = 0; j < boardSize; j++) {
             if (board[i][j] != "X" && board[i][j] != "O") {
-                
+                string temp = board[i][j];
+                board[i][j] = playerSign;
+                if (checkWin(board, boardSize, playerSign, lineForWin)) {
+                    board[i][j] = botSign; // Block the move
+                    inpStr = to_string(i * boardSize + j + 1);
+                    return;
+                }
+                board[i][j] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < boardSize; i++) {
+        for (int j = 0; j < boardSize; j++) {
+            if (board[i][j] != "X" && board[i][j] != "O") {
                 string temp = board[i][j];
                 board[i][j] = botSign;
-                
                 int moveVal = minimax(board, boardSize, lineForWin, false, botSign, playerSign, 0, maxDepth);
-        
                 board[i][j] = temp;
 
-                
                 if (moveVal > bestVal) {
-                    bestMove[0] = i; 
+                    bestMove[0] = i;
                     bestMove[1] = j;
                     bestVal = moveVal;
                 }
             }
         }
     }
-    inpStr = to_string(bestMove[0] * boardSize + bestMove[1] + 1);
+
+    if (bestMove[0] == -1 || bestMove[1] == -1) {
+        randomBot(boardSize, inpStr, botSign, board); 
+    } else {
+        inpStr = to_string(bestMove[0] * boardSize + bestMove[1] + 1);
+    }
 }
+
 
 
 void makeMove(string &inpStr, string firstOpponent, string currSign, int boardSize, int lineForWin, vector<vector<string>> &board, int maxDepth){
@@ -459,7 +469,7 @@ void game(){
     int boardSize;
     int lineForWin;
     int selectMode;
-    int maxDepth = 6;
+    int maxDepth;
     string currSign = "X";
     string inpStr;
     string firstOpponent = "man";
@@ -470,7 +480,8 @@ void game(){
     selectGameMode(selectMode, firstOpponent, secondOpponent);
     initBoard(board, boardSize);
     printBoard(board, boardSize, lineForWin);
-
+    
+    maxDepth = lineForWin-1; 
 
     while (true) {
         //cout << "Player " << currSign << ", enter your move: ";
