@@ -57,8 +57,8 @@ Player X, enter your move: 5
 
 ## Support
 For help and support, you can:
-- Open an issue on the [GitHub repository](https://gitlab.com/mikhail-zhirko/tic-tac-toe).
-- Contact the author at [youremail@example.com](mailto:mikhail.zhirko@example.com).
+- Open an issue on the [https://gitlab.com/mikhail-zhirko/tic-tac-toe](https://gitlab.com/mikhail-zhirko/tic-tac-toe).
+- Contact the author at [mikhail.zhirko@example.com](mailto:mikhail.zhirko@example.com).
 
 ## Roadmap
 - **Version 3**: AI Opponent with multiple difficulty levels.
