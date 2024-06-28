@@ -28,11 +28,11 @@ Tic Tac Toe Ultimate is a versatile implementation of the classic Tic Tac Toe ga
    ```
 2. Navigate to the project directory:
    ```sh
-   cd tictactoe-ultimate
+   cd tic-tac-toe
    ```
 3. Compile the project:
    ```sh
-   g++ -o tictactoe main.cpp
+   g++ -o tictactoe ttt.cpp
    ```
 4. Run the executable:
    ```sh
