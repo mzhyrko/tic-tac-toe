@@ -1,7 +1,9 @@
 {
     "files.associations": {
+        ".als.json": "jsonc",
         "string": "cpp",
         "ostream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "vector": "cpp"
     }
 }
