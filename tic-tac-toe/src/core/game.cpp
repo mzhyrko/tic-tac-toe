@@ -13,15 +13,18 @@ using namespace std;
 void initBoardSize(int &boardSize, int &lineForWin) {
     cout << "Board size (3 - 1024): " << endl;
     cin >> boardSize;
-    if(boardSize < 3 || boardSize > 1024) {
+    if (boardSize < 3 || boardSize > 1024) {
         cout << "Invalid board size." << endl;
         return;
     }
-    if (boardSize <= 3) lineForWin = 3;
-    else if (boardSize <= 5) lineForWin = 3;
-    else if (boardSize <= 14) lineForWin = 4;
-    else if (boardSize <= 19) lineForWin = 5;
-    else lineForWin = 5 + ceil((boardSize - 19) / 20.0);
+    cout << "Line for win (3 - " << boardSize << "): " << endl;
+    cin >> lineForWin;
+    if (lineForWin < 3 || lineForWin > boardSize) {
+        cout << "Invalid line for win. Using default value." << endl;
+        if (boardSize <= 5) lineForWin = 3;
+        else if (boardSize <= 14) lineForWin = 4;
+        else lineForWin = 5;
+    }
 }
 
 void changeSign(string &currSign) {
@@ -41,10 +44,14 @@ void game() {
     vector<vector<string>> board;
 
     initBoardSize(boardSize, lineForWin);
+    if (boardSize < 3 || boardSize > 1024 || lineForWin < 3 || lineForWin > boardSize) {
+        cout << "Invalid parameters. Exiting." << endl;
+        return;
+    }
     selectGameMode(selectMode, firstOpponent, secondOpponent);
     initBoard(board, boardSize);
     printBoard(board, boardSize, lineForWin);
-    maxDepth = lineForWin - 1;
+    maxDepth = lineForWin; // Увеличено с lineForWin - 1
 
     while (true) {
         makeMove(inpStr, firstOpponent, currSign, boardSize, lineForWin, board, maxDepth);

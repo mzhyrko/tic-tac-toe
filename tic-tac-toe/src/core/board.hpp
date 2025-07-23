@@ -1,5 +1,4 @@
-#ifndef BOARD_HPP
-#define BOARD_HPP
+#pragma once
 
 #include <vector>
 #include <string>
@@ -20,5 +19,3 @@ bool columnsCheckWin(const vector<vector<string>>& board, int boardSize, string 
 bool rowsCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j);
 bool mainDiagonalCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j);
 bool antiDiagonalCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j);
-
-#endif // BOARD_HPP

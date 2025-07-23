@@ -52,50 +52,40 @@ void insertMove(vector<vector<string>>& board, int boardSize, int input, string 
 }
 
 bool columnsCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    for (int x = 0; x < lineForWin; x++) {
-        bool rowWin = true;
-        for (int y = 0; y < lineForWin; y++) {
-            if (board[i + x][j + y] != currSign) {
-                rowWin = false;
-                break;
-            }
-        }
-        if (rowWin) return true;
+    if (i + lineForWin > boardSize) return false;
+    for (int x = 0; x < lineForWin; ++x) {
+        if (board[i + x][j] != currSign) return false;
     }
-    return false;
+    return true;
 }
 
 bool rowsCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    for (int y = 0; y < lineForWin; y++) {
-        bool colWin = true;
-        for (int x = 0; x < lineForWin; x++) {
-            if (board[i + x][j + y] != currSign) {
-                colWin = false;
-                break;
-            }
-        }
-        if (colWin) return true;
+    if (j + lineForWin > boardSize) return false;
+    for (int y = 0; y < lineForWin; ++y) {
+        if (board[i][j + y] != currSign) return false;
     }
-    return false;
+    return true;
 }
 
 bool mainDiagonalCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    for (int x = 0; x < lineForWin; x++) {
+    if (i + lineForWin > boardSize || j + lineForWin > boardSize) return false;
+    for (int x = 0; x < lineForWin; ++x) {
         if (board[i + x][j + x] != currSign) return false;
     }
     return true;
 }
 
 bool antiDiagonalCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    for (int x = 0; x < lineForWin; x++) {
-        if (board[i + x][j + lineForWin - 1 - x] != currSign) return false;
+    if (i + lineForWin > boardSize || j < lineForWin - 1) return false;
+    for (int x = 0; x < lineForWin; ++x) {
+        if (board[i + x][j - x] != currSign) return false;
     }
     return true;
 }
 
 bool checkWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin) {
-    for (int i = 0; i <= boardSize - lineForWin; ++i) {
-        for (int j = 0; j <= boardSize - lineForWin; ++j) {
+    for (int i = 0; i < boardSize; ++i) {
+        for (int j = 0; j < boardSize; ++j) {
             if (columnsCheckWin(board, boardSize, currSign, lineForWin, i, j)) return true;
             if (rowsCheckWin(board, boardSize, currSign, lineForWin, i, j)) return true;
             if (mainDiagonalCheckWin(board, boardSize, currSign, lineForWin, i, j)) return true;
