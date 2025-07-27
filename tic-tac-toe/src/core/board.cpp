@@ -1,21 +1,22 @@
 #include "board.hpp"
-
 #include <iostream>
 #include <iomanip>
-#include <string>
-#include <vector>
-#include <cmath>
 
 using namespace std;
 
-void initBoard(vector<vector<string>>& board, int boardSize) {
-    board = vector<vector<string>>(boardSize, vector<string>(boardSize));
-    int numDigits = to_string(boardSize * boardSize).length();
+Board::Board(int size, int winCondition) : boardSize(size), lineForWin(winCondition) {
+    init();
+}
+
+void Board::init() {
+    // Resize the board and fill it with position numbers
+    board = std::vector<std::vector<std::string>>(boardSize, std::vector<std::string>(boardSize));
+    int numDigits = std::to_string(boardSize * boardSize).length();
     for (int i = 0; i < boardSize; ++i) {
         for (int j = 0; j < boardSize; ++j) {
             int num = i * boardSize + j + 1;
-            string numStr = to_string(num);
-            while ((int)numStr.length() < numDigits) {
+            std::string numStr = std::to_string(num);
+            while (numStr.length() < numDigits) {
                 numStr = "0" + numStr;
             }
             board[i][j] = numStr;
@@ -23,7 +24,87 @@ void initBoard(vector<vector<string>>& board, int boardSize) {
     }
 }
 
-void printBoard(const vector<vector<string>>& board, int boardSize, int lineForWin) {
+bool Board::makeMove(int position, const std::string& sign) {
+    // Convert position to row and column
+    int index = position - 1;
+    int row = index / boardSize;
+    int col = index % boardSize;
+    if (row >= 0 && row < boardSize && col >= 0 && col < boardSize &&
+        board[row][col] != "X" && board[row][col] != "O") {
+        board[row][col] = sign;
+        return true;
+    }
+    return false;
+}
+
+bool Board::checkWin(const std::string& sign) const {
+    // Check rows
+    for (int i = 0; i < boardSize; ++i) {
+        for (int j = 0; j <= boardSize - lineForWin; ++j) {
+            bool win = true;
+            for (int k = 0; k < lineForWin; ++k) {
+                if (board[i][j + k] != sign) {
+                    win = false;
+                    break;
+                }
+            }
+            if (win) return true;
+        }
+    }
+    // Check columns
+    for (int j = 0; j < boardSize; ++j) {
+        for (int i = 0; i <= boardSize - lineForWin; ++i) {
+            bool win = true;
+            for (int k = 0; k < lineForWin; ++k) {
+                if (board[i + k][j] != sign) {
+                    win = false;
+                    break;
+                }
+            }
+            if (win) return true;
+        }
+    }
+    // Check main diagonals
+    for (int i = 0; i <= boardSize - lineForWin; ++i) {
+        for (int j = 0; j <= boardSize - lineForWin; ++j) {
+            bool win = true;
+            for (int k = 0; k < lineForWin; ++k) {
+                if (board[i + k][j + k] != sign) {
+                    win = false;
+                    break;
+                }
+            }
+            if (win) return true;
+        }
+    }
+    // Check anti-diagonals
+    for (int i = 0; i <= boardSize - lineForWin; ++i) {
+        for (int j = lineForWin - 1; j < boardSize; ++j) {
+            bool win = true;
+            for (int k = 0; k < lineForWin; ++k) {
+                if (board[i + k][j - k] != sign) {
+                    win = false;
+                    break;
+                }
+            }
+            if (win) return true;
+        }
+    }
+    return false;
+}
+
+bool Board::isFull() const {
+    for (int i = 0; i < boardSize; ++i) {
+        for (int j = 0; j < boardSize; ++j) {
+            if (board[i][j] != "X" && board[i][j] != "O") {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void Board::print() const {
     const int cellWidth = 5;
     for (int i = 0; i < boardSize; ++i) {
         for (int j = 0; j < boardSize; ++j) {
@@ -36,79 +117,38 @@ void printBoard(const vector<vector<string>>& board, int boardSize, int lineForW
         }
         cout << endl;
     }
+
+    cout << endl;
 }
 
-bool isValidMove(const vector<vector<string>>& board, int boardSize, int input) {
-    if (input < 1 || input > boardSize * boardSize) return false;
-    int row = (input - 1) / boardSize;
-    int col = (input - 1) % boardSize;
-    return board[row][col] != "X" && board[row][col] != "O";
+int Board::getBoardSize() const {
+    return boardSize;
 }
 
-void insertMove(vector<vector<string>>& board, int boardSize, int input, string currSign) {
-    int row = (input - 1) / boardSize;
-    int col = (input - 1) % boardSize;
-    board[row][col] = currSign;
+int Board::getLineForWin() const {
+    return lineForWin;
 }
 
-bool columnsCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    if (i + lineForWin > boardSize) return false;
-    for (int x = 0; x < lineForWin; ++x) {
-        if (board[i + x][j] != currSign) return false;
-    }
-    return true;
-}
-
-bool rowsCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    if (j + lineForWin > boardSize) return false;
-    for (int y = 0; y < lineForWin; ++y) {
-        if (board[i][j + y] != currSign) return false;
-    }
-    return true;
-}
-
-bool mainDiagonalCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    if (i + lineForWin > boardSize || j + lineForWin > boardSize) return false;
-    for (int x = 0; x < lineForWin; ++x) {
-        if (board[i + x][j + x] != currSign) return false;
-    }
-    return true;
-}
-
-bool antiDiagonalCheckWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin, int i, int j) {
-    if (i + lineForWin > boardSize || j < lineForWin - 1) return false;
-    for (int x = 0; x < lineForWin; ++x) {
-        if (board[i + x][j - x] != currSign) return false;
-    }
-    return true;
-}
-
-bool checkWin(const vector<vector<string>>& board, int boardSize, string currSign, int lineForWin) {
+std::vector<int> Board::getAvailableMoves() const {
+    std::vector<int> available;
     for (int i = 0; i < boardSize; ++i) {
         for (int j = 0; j < boardSize; ++j) {
-            if (columnsCheckWin(board, boardSize, currSign, lineForWin, i, j)) return true;
-            if (rowsCheckWin(board, boardSize, currSign, lineForWin, i, j)) return true;
-            if (mainDiagonalCheckWin(board, boardSize, currSign, lineForWin, i, j)) return true;
-            if (antiDiagonalCheckWin(board, boardSize, currSign, lineForWin, i, j)) return true;
+            if (board[i][j] != "X" && board[i][j] != "O") {
+                int position = i * boardSize + j + 1;
+                available.push_back(position);
+            }
         }
     }
-    return false;
+    return available;
 }
 
-bool checkDraw(vector<vector<string>>& board, int boardSize) {
-    for (int i = 0; i < boardSize; ++i) {
-        for (int j = 0; j < boardSize; ++j) {
-            if (board[i][j] != "X" && board[i][j] != "O") return false;
-        }
+std::string Board::getCell(int row, int col) const {
+    if (row < 0 || row >= boardSize || col < 0 || col >= boardSize) {
+        return "";
     }
-    return true;
+    return board[row][col];
 }
 
-bool isBoardFull(const vector<vector<string>>& board, int boardSize) {
-    for (int i = 0; i < boardSize; ++i) {
-        for (int j = 0; j < boardSize; ++j) {
-            if (board[i][j] != "X" && board[i][j] != "O") return false;
-        }
-    }
-    return true;
+const std::vector<std::vector<std::string>>& Board::getBoardState() const {
+    return board;
 }

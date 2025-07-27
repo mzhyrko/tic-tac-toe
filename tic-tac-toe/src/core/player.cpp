@@ -1,75 +1,44 @@
 #include "player.hpp"
-
-#include <iostream>
-#include <string>
-#include <vector>
 #include "../bots/bots.hpp"
+#include "board.hpp"
+#include <iostream>
+#include <exception>  // Добавлен
 
-using namespace std;
+Player::Player(const std::string& sign) : sign(sign) {}
 
-void selectGameMode(int &selectMode, string &firstOpponent, string &secondOpponent) {
-    int localInput;
-    cout << "Game modes:" << endl;
-    cout << "1 - Human vs Human" << endl;
-    cout << "2 - Human vs Bot" << endl;
-    cout << "3 - Bot vs Bot" << endl;
-    cout << "Select game mode: ";
-    cin >> selectMode;
+std::string Player::getSign() const {
+    return sign;
+}
 
-    if (selectMode == 1) {
-        firstOpponent = "man";
-    } else if (selectMode == 2) {
-        firstOpponent = "man";
-        cout << "Select bot type: " << endl;
-        cout << "1 - Random bot" << endl;
-        cout << "2 - Beginner bot" << endl;
-        cout << "3 - Advanced bot" << endl;
-        cin >> localInput;
-        secondOpponent = (localInput == 1) ? "rbot" :
-                         (localInput == 2) ? "bbot" : "abot";
-    } else if (selectMode == 3) {
-        cout << "Select first bot:" << endl;
-        cout << "1 - Random bot" << endl;
-        cout << "2 - Beginner bot" << endl;
-        cout << "3 - Advanced bot" << endl;
-        cin >> localInput;
-        firstOpponent = (localInput == 1) ? "rbot" :
-                        (localInput == 2) ? "bbot" : "abot";
+HumanPlayer::HumanPlayer(const std::string& sign) : Player(sign) {}
 
-        cout << "Select second bot:" << endl;
-        cout << "1 - Random bot" << endl;
-        cout << "2 - Beginner bot" << endl;
-        cout << "3 - Advanced bot" << endl;
-        cin >> localInput;
-        secondOpponent = (localInput == 1) ? "rbot" :
-                         (localInput == 2) ? "bbot" : "abot";
+int HumanPlayer::getMove(const Board& board) {
+    std::cout << "Player " << sign << ", enter your move: ";
+    std::string input;
+    std::cin >> input;
+    try {
+        int move = std::stoi(input);
+        return move;
+    } catch (const std::exception&) {
+        std::cout << "Invalid input. Please enter a number.\n";
+        return getMove(board);
     }
 }
 
-void changePlayer(int &selectMode, string &firstOpponent, string &secondOpponent) {
-    swap(firstOpponent, secondOpponent);
+RandomBotPlayer::RandomBotPlayer(const std::string& sign) : Player(sign) {}
+
+int RandomBotPlayer::getMove(const Board& board) {
+    return randomBot(board, sign);
 }
 
-bool isNumber(string inpStr) {
-    for (char c : inpStr) {
-        if (c < '0' || c > '9') return false;
-    }
-    return true;
+BeginnerBotPlayer::BeginnerBotPlayer(const std::string& sign) : Player(sign) {}
+
+int BeginnerBotPlayer::getMove(const Board& board) {
+    return beginnerBot(board, sign);
 }
 
-void makeMove(string &inpStr, string firstOpponent, string currSign, int boardSize,
-              int lineForWin, vector<vector<string>> &board, int maxDepth) {
-    if (firstOpponent == "rbot") {
-        randomBot(boardSize, inpStr, currSign, board);
-        cout << "Random bot " << currSign << " entered move: " << inpStr << endl;
-    } else if (firstOpponent == "bbot") {
-        beginnerBot(inpStr, currSign, boardSize, lineForWin, board);
-        cout << "Beginner bot " << currSign << " entered move: " << inpStr << endl;
-    } else if (firstOpponent == "abot") {
-        dpTTToeBot(board, boardSize, lineForWin, currSign, inpStr, maxDepth);
-        cout << "Advanced bot " << currSign << " entered move: " << inpStr << endl;
-    } else {
-        cout << "Player " << currSign << ", enter your move: ";
-        cin >> inpStr;
-    }
+AdvancedBotPlayer::AdvancedBotPlayer(const std::string& sign, int maxDepth) : Player(sign), maxDepth(maxDepth) {}
+
+int AdvancedBotPlayer::getMove(const Board& board) {
+    return dpTTToeBot(board, sign, maxDepth);
 }

@@ -1,28 +1,26 @@
 #include "bots.hpp"
-#include "../core/board.hpp"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <functional>
 #include <algorithm>
 #include <cstdint>
 #include <chrono>
 #include <random>
+#include <cmath>
+#include <exception>
 #include <omp.h>
 
 using namespace std;
 
-// Кэш для мемоизации минимакса
+// Cash for minimax memoization
 unordered_map<uint64_t, int> memo;
-const size_t MAX_CACHE_SIZE = 10000000; // Увеличенный размер кэша
-
-// Кэш для проверки победы
+const size_t MAX_CACHE_SIZE = 10000000;
 unordered_map<uint64_t, bool> winCache;
 
-// Хэширование Зобриста
+// Implementation of ZobristHash methods
 ZobristHash::ZobristHash(int boardSize) {
     srand(time(0));
     xKeys = vector<vector<uint64_t>>(boardSize, vector<uint64_t>(boardSize));
@@ -49,7 +47,6 @@ uint64_t ZobristHash::operator()(const vector<vector<string>>& board) const {
     return hash;
 }
 
-// Подсчет пустых клеток
 int getEmptyCells(const vector<vector<string>>& board, int boardSize) {
     int count = 0;
     for (int i = 0; i < boardSize; ++i) {
@@ -60,7 +57,6 @@ int getEmptyCells(const vector<vector<string>>& board, int boardSize) {
     return count;
 }
 
-// Получение кандидатов на ход (только незанятые клетки)
 vector<pair<int, int>> getCandidateMoves(const vector<vector<string>>& board, int boardSize, int lineForWin, string botSign, string playerSign) {
     vector<pair<int, int>> candidates;
     for (int i = 0; i < boardSize; ++i) {
@@ -108,7 +104,7 @@ vector<pair<int, int>> getCandidateMoves(const vector<vector<string>>& board, in
     return candidates;
 }
 
-// Оптимизированная эвристическая оценка
+// Optimized evristic evaluation
 int evaluateBoard(const vector<vector<string>>& board, int boardSize, string botSign, string playerSign, int lineForWin) {
     int score = 0;
     for (int i = 0; i < boardSize; ++i) {
@@ -149,7 +145,7 @@ int evaluateBoard(const vector<vector<string>>& board, int boardSize, string bot
     return score;
 }
 
-// Оценка хода для сортировки
+// Move evaluation for sorting
 int scoreMove(const vector<vector<string>>& board, int boardSize, int i, int j, string currSign, int lineForWin) {
     int score = 0;
     for (int di = -1; di <= 1; ++di) {
@@ -177,15 +173,14 @@ int scoreMove(const vector<vector<string>>& board, int boardSize, int i, int j, 
     return score;
 }
 
-// Минимакс с альфа-бета отсечением и итеративным углублением
-int minimax(vector<vector<string>>& board, int boardSize, int lineForWin,
-            bool isMax, string botSign, string playerSign, int depth,
+// Minimax with alpha-beta pruning
+int minimax(Board& board, int lineForWin, bool isMax, string botSign, string playerSign, int depth,
             int maxDepth, int alpha, int beta, const chrono::steady_clock::time_point& startTime) {
-    static ZobristHash hasher(boardSize);
-    uint64_t hash = hasher(board);
+    static ZobristHash hasher(board.getBoardSize());
+    uint64_t hash = hasher(board.getBoardState());
 
-    if (depth > 0 && chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - startTime).count() > 10000) {
-        return evaluateBoard(board, boardSize, botSign, playerSign, lineForWin);
+    if (depth > 0 && chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - startTime).count() > 30000) {
+        return evaluateBoard(board.getBoardState(), board.getBoardSize(), botSign, playerSign, lineForWin);
     }
 
     if (winCache.count(hash ^ (botSign == "X" ? 1ULL : 2ULL))) {
@@ -195,29 +190,31 @@ int minimax(vector<vector<string>>& board, int boardSize, int lineForWin,
         if (winCache[hash ^ (playerSign == "X" ? 1ULL : 2ULL)]) return depth - 100000;
     }
 
-    if (checkWin(board, boardSize, botSign, lineForWin)) {
+    if (board.checkWin(botSign)) {
         winCache[hash ^ (botSign == "X" ? 1ULL : 2ULL)] = true;
         return 100000 - depth;
     }
-    if (checkWin(board, boardSize, playerSign, lineForWin)) {
+    if (board.checkWin(playerSign)) {
         winCache[hash ^ (playerSign == "X" ? 1ULL : 2ULL)] = true;
         return depth - 100000;
     }
-    if (checkDraw(board, boardSize)) {
+    if (getEmptyCells(board.getBoardState(), board.getBoardSize()) == 0) {
         return 0;
     }
     if (depth >= maxDepth) {
-        return evaluateBoard(board, boardSize, botSign, playerSign, lineForWin);
+        return evaluateBoard(board.getBoardState(), board.getBoardSize(), botSign, playerSign, lineForWin);
     }
 
     if (memo.count(hash)) return memo[hash];
 
-    vector<pair<int, int>> candidates = getCandidateMoves(board, boardSize, lineForWin, botSign, playerSign);
-    if (candidates.empty()) return evaluateBoard(board, boardSize, botSign, playerSign, lineForWin);
+    auto candidates = getCandidateMoves(board.getBoardState(), board.getBoardSize(), board.getLineForWin(), botSign, (botSign == "X" ? "O" : "X"));
+    
+    if (candidates.empty()) 
+        return evaluateBoard(board.getBoardState(), board.getBoardSize(), botSign, playerSign, lineForWin);
 
     vector<pair<int, pair<int, int>>> scoredCandidates;
     for (const auto& [i, j] : candidates) {
-        scoredCandidates.emplace_back(scoreMove(board, boardSize, i, j, isMax ? botSign : playerSign, lineForWin), make_pair(i, j));
+        scoredCandidates.emplace_back(scoreMove(board.getBoardState(), board.getBoardSize(), i, j, isMax ? botSign : playerSign, lineForWin), make_pair(i, j));
     }
     sort(scoredCandidates.rbegin(), scoredCandidates.rend());
 
@@ -234,22 +231,19 @@ int minimax(vector<vector<string>>& board, int boardSize, int lineForWin,
             #pragma omp critical
             {
                 if (!cancel) {
-                    original = board[i][j];
-                    board[i][j] = botSign;
+                    original = board.getCell(i, j);
+                    board.setCell(i, j, botSign);
                 }
             }
             if (!cancel) {
-                val = minimax(board, boardSize, lineForWin, false,
-                              botSign, playerSign, depth + 1, maxDepth, alpha, beta, startTime);
+                val = minimax(board, lineForWin, false, botSign, playerSign, depth + 1, maxDepth, alpha, beta, startTime);
                 #pragma omp critical
                 {
                     if (!cancel) {
-                        board[i][j] = original;
+                        board.setCell(i, j, original);
                         best = max(best, val);
                         alpha = max(alpha, best);
-                        if (beta <= alpha) {
-                            cancel = true;
-                        }
+                        if (beta <= alpha) cancel = true;
                     }
                 }
             }
@@ -265,86 +259,41 @@ int minimax(vector<vector<string>>& board, int boardSize, int lineForWin,
             #pragma omp critical
             {
                 if (!cancel) {
-                    original = board[i][j];
-                    board[i][j] = playerSign;
+                    original = board.getCell(i, j);
+                    board.setCell(i, j, playerSign);
                 }
             }
             if (!cancel) {
-                val = minimax(board, boardSize, lineForWin, true,
-                              botSign, playerSign, depth + 1, maxDepth, alpha, beta, startTime);
+                val = minimax(board, lineForWin, true, botSign, playerSign, depth + 1, maxDepth, alpha, beta, startTime);
                 #pragma omp critical
                 {
                     if (!cancel) {
-                        board[i][j] = original;
+                        board.setCell(i, j, original);
                         best = min(best, val);
                         beta = min(beta, best);
-                        if (beta <= alpha) {
-                            cancel = true;
-                        }
+                        if (beta <= alpha) cancel = true;
                     }
                 }
             }
         }
     }
 
-    if (memo.size() < MAX_CACHE_SIZE) {
-        memo[hash] = best;
-    }
+    if (memo.size() < MAX_CACHE_SIZE) memo[hash] = best;
     return best;
 }
 
-// Случайный бот
-void randomBot(int boardSize, string &inpStr, [[maybe_unused]] string currSign, vector<vector<string>> &board) {
+// Auxiliary function
+void dpTTToeBotImpl(Board& board, string botSign, string& inpStr, int maxDepth) {
     static mt19937 gen(random_device{}());
-    vector<int> validMoves;
-    for (int i = 1; i <= boardSize * boardSize; ++i) {
-        if (isValidMove(board, boardSize, i)) {
-            validMoves.push_back(i);
-        }
-    }
-    if (!validMoves.empty()) {
-        inpStr = to_string(validMoves[gen() % validMoves.size()]);
-    }
-}
+    int boardSize = board.getBoardSize();
+    int lineForWin = board.getLineForWin();
 
-// Бот начального уровня
-void beginnerBot(string &inpStr, string currSign, int boardSize, int lineForWin, vector<vector<string>> &board) {
-    for (int i = 1; i <= boardSize * boardSize; ++i) {
-        if (isValidMove(board, boardSize, i)) {
-            insertMove(board, boardSize, i, currSign);
-            if (checkWin(board, boardSize, currSign, lineForWin)) {
-                inpStr = to_string(i);
-                return;
-            }
-            insertMove(board, boardSize, i, "0" + to_string(i));
-        }
-    }
-    string opponent = (currSign == "X") ? "O" : "X";
-    for (int i = 1; i <= boardSize * boardSize; ++i) {
-        if (isValidMove(board, boardSize, i)) {
-            insertMove(board, boardSize, i, opponent);
-            if (checkWin(board, boardSize, opponent, lineForWin)) {
-                inpStr = to_string(i);
-                insertMove(board, boardSize, i, currSign);
-                return;
-            }
-            insertMove(board, boardSize, i, "0" + to_string(i));
-        }
-    }
-    randomBot(boardSize, inpStr, currSign, board);
-}
-
-// Улучшенный непобедимый бот
-void dpTTToeBot(vector<vector<string>>& board, int boardSize, int lineForWin,
-                string botSign, string& inpStr, int maxDepth) {
-    static mt19937 gen(random_device{}());
     if (memo.size() > MAX_CACHE_SIZE) memo.clear();
     if (winCache.size() > MAX_CACHE_SIZE) winCache.clear();
 
-    // Динамическая настройка глубины
-    int dynamicMaxDepth;
+    int dynamicMaxDepth = maxDepth;
     if (boardSize == 3) {
-        dynamicMaxDepth = 9; // Полное дерево для 3x3
+        dynamicMaxDepth = 9;
     } else if (boardSize <= 5) {
         dynamicMaxDepth = 19;
     } else if (boardSize <= 7) {
@@ -356,14 +305,11 @@ void dpTTToeBot(vector<vector<string>>& board, int boardSize, int lineForWin,
     } else if (boardSize <= 20) {
         dynamicMaxDepth = 59;
     } else {
-        dynamicMaxDepth = 69; // Для больших досок
+        dynamicMaxDepth = 69; 
     }
 
-    // Проверка пустой доски
-    bool isBoardEmpty = getEmptyCells(board, boardSize) == boardSize * boardSize;
-
-    // Первый ход: приоритет центру
-    if (isBoardEmpty) {
+    // First Move: center priority
+    if (getEmptyCells(board.getBoardState(), board.getBoardSize()) == boardSize * boardSize) {
         vector<int> centerMoves;
         int mid = boardSize / 2;
         vector<pair<int, int>> centers = {{mid, mid}};
@@ -374,65 +320,64 @@ void dpTTToeBot(vector<vector<string>>& board, int boardSize, int lineForWin,
         }
         for (const auto& [r, c] : centers) {
             int move = r * boardSize + c + 1;
-            if (isValidMove(board, boardSize, move)) {
-                centerMoves.push_back(move);
-            }
+            int row = r, col = c;
+            if (board.getCell(row, col) != "X" && board.getCell(row, col) != "O") centerMoves.push_back(move);
         }
         if (!centerMoves.empty()) {
             inpStr = to_string(centerMoves[gen() % centerMoves.size()]);
-            //cout << "Улучшенный бот " << botSign << " выбрал центральный ход: " << inpStr << endl;
             return;
         }
     }
 
-    // Проверка немедленной победы
+    // Check immediate win
     for (int i = 0; i < boardSize; ++i) {
         for (int j = 0; j < boardSize; ++j) {
-            if (board[i][j] != "X" && board[i][j] != "O") {
-                string original = board[i][j];
-                board[i][j] = botSign;
-                if (checkWin(board, boardSize, botSign, lineForWin)) {
+            if (board.getCell(i, j) != "X" && board.getCell(i, j) != "O") {
+                string original = board.getCell(i, j);
+                board.setCell(i, j, botSign);
+                if (board.checkWin(botSign)) {
                     inpStr = to_string(i * boardSize + j + 1);
-                    board[i][j] = original;
-                    //cout << "Улучшенный бот " << botSign << " выбрал выигрышный ход: " << inpStr << endl;
+                    board.setCell(i, j, original);
                     return;
                 }
-                board[i][j] = original;
+                board.setCell(i, j, original);
             }
         }
     }
 
-    // Блокировка победы противника
+    // Block opponent's win
     string playerSign = (botSign == "X") ? "O" : "X";
     for (int i = 0; i < boardSize; ++i) {
         for (int j = 0; j < boardSize; ++j) {
-            if (board[i][j] != "X" && board[i][j] != "O") {
-                string original = board[i][j];
-                board[i][j] = playerSign;
-                if (checkWin(board, boardSize, playerSign, lineForWin)) {
-                    board[i][j] = original;
+            if (board.getCell(i, j) != "X" && board.getCell(i, j) != "O") {
+                string original = board.getCell(i, j);
+                board.setCell(i, j, playerSign);
+                if (board.checkWin(playerSign)) {
+                    board.setCell(i, j, original);
                     inpStr = to_string(i * boardSize + j + 1);
-                    //cout << "Улучшенный бот " << botSign << " выбрал блокирующий ход: " << inpStr << endl;
                     return;
                 }
-                board[i][j] = original;
+                board.setCell(i, j, original);
             }
         }
     }
 
-    // Получение кандидатов на ход
-    vector<pair<int, int>> candidates = getCandidateMoves(board, boardSize, lineForWin, botSign, playerSign);
+    auto candidates = getCandidateMoves(board.getBoardState(), board.getBoardSize(), board.getLineForWin(), botSign, (botSign == "X" ? "O" : "X"));
     if (candidates.empty()) {
-        randomBot(boardSize, inpStr, botSign, board);
-        //cout << "Улучшенный бот " << botSign << " выбрал случайный ход: " << inpStr << endl;
+        // Using randomBot as a fallback
+        vector<int> available = board.getAvailableMoves();
+        if (available.empty()) {
+            inpStr = "-1";
+            return;
+        }
+        inpStr = to_string(available[gen() % available.size()]);
         return;
     }
 
-    // Итеративное углубление с минимаксом
     auto startTime = chrono::steady_clock::now();
     vector<pair<int, pair<int, int>>> scoredCandidates;
     for (const auto& [i, j] : candidates) {
-        scoredCandidates.emplace_back(scoreMove(board, boardSize, i, j, botSign, lineForWin), make_pair(i, j));
+        scoredCandidates.emplace_back(scoreMove(board.getBoardState(), board.getBoardSize(), i, j, botSign, lineForWin), make_pair(i, j));
     }
     sort(scoredCandidates.rbegin(), scoredCandidates.rend());
 
@@ -451,17 +396,16 @@ void dpTTToeBot(vector<vector<string>>& board, int boardSize, int lineForWin,
             #pragma omp critical
             {
                 if (!cancel) {
-                    original = board[i][j];
-                    board[i][j] = botSign;
+                    original = board.getCell(i, j);
+                    board.setCell(i, j, botSign);
                 }
             }
             if (!cancel) {
-                moveVal = minimax(board, boardSize, lineForWin, false,
-                                  botSign, playerSign, 0, depth, -1000000, 1000000, startTime);
+                moveVal = minimax(board, lineForWin, false, botSign, playerSign, 0, depth, -1000000, 1000000, startTime);
                 #pragma omp critical
                 {
                     if (!cancel) {
-                        board[i][j] = original;
+                        board.setCell(i, j, original);
                         if (moveVal > bestVal) {
                             bestVal = moveVal;
                             bestMoves = {{i, j}};
@@ -482,8 +426,41 @@ void dpTTToeBot(vector<vector<string>>& board, int boardSize, int lineForWin,
             chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - startTime).count() <= 30000) {
             auto [bestRow, bestCol] = bestMoves[gen() % bestMoves.size()];
             inpStr = to_string(bestRow * boardSize + bestCol + 1);
-            //cout << "Улучшенный бот " << botSign << " выбрал минимакс ход: " << inpStr << " (оценка: " << bestVal << ")" << endl;
             return;
         }
+    }
+    
+    // If no candidates found, return first candidate
+    if (!scoredCandidates.empty()) {
+        auto [i, j] = scoredCandidates[0].second;
+        inpStr = to_string(i * boardSize + j + 1);
+    } else {
+        // Using randomBot as a fallback
+        vector<int> available = board.getAvailableMoves();
+        if (available.empty()) {
+            inpStr = "-1";
+            return;
+        }
+        inpStr = to_string(available[gen() % available.size()]);
+    }
+}
+
+// The main bot function (corresponds to the declaration in bots.hpp)
+int dpTTToeBot(const Board& board, const string& botSign, int maxDepth) {
+    // Create a copy of the board for manipulation
+    Board tempBoard = board;
+    string moveStr;
+    
+    // (dpTTToeBotImpl is the implementation of the bot logic)
+    dpTTToeBotImpl(tempBoard, botSign, moveStr, maxDepth);
+    
+    try {
+        return stoi(moveStr);
+    } catch (...) {
+        // In case of error, return a random move
+        vector<int> available = board.getAvailableMoves();
+        if (available.empty()) return -1;
+        static mt19937 gen(random_device{}());
+        return available[gen() % available.size()];
     }
 }

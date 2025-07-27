@@ -1,35 +1,22 @@
 #pragma once
 
+#include "../core/board.hpp"
 #include <vector>
 #include <string>
 #include <utility>
 #include <unordered_map>
-#include <cstdint> // Добавлено для uint64_t
+#include <cstdint> 
 
 using namespace std;
 
-// Random move bot
-void randomBot(int boardSize, string &inpStr, string currSign, vector<vector<string>> &board);
+// Bots initerface
+// Each bot function should return the position to place its sign
+// If no moves are possible, return -1 
+int randomBot(const Board& board, const string& currSign);
+int beginnerBot(const Board& board, const string& currSign);
+int dpTTToeBot(const Board& board, const string& botSign, int maxDepth); 
 
-// Beginner бот (использует эвристическое оценивание)
-void beginnerBot(string &inpStr, string currSign, int boardSize, int lineForWin, vector<vector<string>> &board);
-
-// Advanced бот (использует минимакс с итеративным углублением)
-void dpTTToeBot(vector<vector<string>> &board, int boardSize, int lineForWin, string botSign, string &inpStr, int maxDepth);
-
-// Алгоритм минимакса для продвинутого бота
-int minimax(vector<vector<string>> &board, int boardSize, int lineForWin, bool isMax, string botSign, string playerSign, int depth, int maxDepth, int alpha, int beta);
-
-// Получение кандидатов на ходы (только клетки рядом с занятыми)
-vector<pair<int, int>> getCandidateMoves(const vector<vector<string>>& board, int boardSize);
-
-// Эвристическая оценка доски
-int evaluateBoard(const vector<vector<string>>& board, int boardSize, string botSign, string playerSign, int lineForWin);
-
-// Оценка хода для сортировки кандидатов
-int scoreMove(const vector<vector<string>>& board, int boardSize, int i, int j, string currSign);
-
-// Zobrist hashing для доски
+// Zobrist hashing for board state 
 struct ZobristHash {
     vector<vector<uint64_t>> xKeys;
     vector<vector<uint64_t>> oKeys;
