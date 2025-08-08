@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крестики-Нолики Ultimate</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .controls {
+            margin: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .board {
+            display: grid;
+            gap: 5px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            font-size: 18px;
+            color: #333;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        select, input {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .game-info {
+            font-size: 14px;
+            margin: 15px 0;
+            color: #666;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>Крестики-Нолики Ultimate</h2>
+        <div>
+            <label for="boardSize">Размер доски:</label>
+            <select id="boardSize">
+                <option value="3">3x3</option>
+                <option value="4">4x4</option>
+                <option value="5">5x5</option>
+            </select>
+        </div>
+        <div>
+            <label for="player1Type">Игрок 1 (X):</label>
+            <select id="player1Type">
+                <option value="human">Человек</option>
+                <option value="bot">Бот</option>
+            </select>
+        </div>
+        <div>
+            <label for="player2Type">Игрок 2 (O):</label>
+            <select id="player2Type">
+                <option value="human">Человек</option>
+                <option value="bot" selected>Бот</option>
+            </select>
+        </div>
+        <button id="createGameBtn" onclick="createGame()">Создать игру</button>
+        <div style="margin-top: 15px;">
+            <input type="text" id="gameIdInput" placeholder="ID игры для присоединения">
+            <button onclick="joinGame()">Присоединиться</button>
+        </div>
+        <div id="gameInfo" class="game-info"></div>
+    </div>
+    
+    <div id="status" class="status">Ожидание начала игры...</div>
+    
+    <div id="board" class="board"></div>
+
+    <script>
+        // Глобальные переменные
+        let gameId = null;
+        let playerId = 'player_' + Math.random().toString(36).substring(2, 10);
+        let mySign = null;
+        let boardSize = 3;
+        let currentSign = 'X';
+        let ws = null;
+        let wsReady = false;
+        let gameActive = false;
+        
+        // Логирование для отладки
+        function log(message) {
+            console.log(message);
+        }
+        
+        // Установка соединения WebSocket
+        function connectWS(callback) {
+            if (ws && (ws.readyState === 0 || ws.readyState === 1)) {
+                if (ws.readyState === 1 && callback) callback();
+                return;
+            }
+            
+            try {
+                const wsUrl = 'ws://localhost:3000/ws';
+                log('Connecting to WebSocket: ' + wsUrl);
+                
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    wsReady = true;
+                    log('WebSocket connection established');
+                    updateStatus('Подключено к серверу. Настройте и начните игру.');
+                    
+                    // ping every 30 seconds to keep connection alive
+                    setInterval(() => {
+                        if (ws && ws.readyState === 1) {
+                            ws.send(JSON.stringify({action: 'ping'}));
+                        }
+                    }, 30000);
+                    
+                    if (gameId && callback) {
+                        callback();
+                    }
+                };
+                
+                ws.onmessage = (event) => {
+                    log('WebSocket message received: ' + event.data);
+                    try {
+                        const data = JSON.parse(event.data);
+                        
+                        if (data.type === 'pong') {
+                            return;
+                        }
+                        
+                        if (data.type === 'error') {
+                            updateStatus('Ошибка: ' + data.message, true);
+                            return;
+                        }
+                        
+                        if (data.type === 'update') {
+                            gameActive = true;
+                            
+                            if (Array.isArray(data.board)) {
+                                boardSize = data.board.length;
+                                renderBoard(boardSize);
+                                updateBoard(data.board);
+                            }
+                            
+                            currentSign = data.currentSign || 'X';
+                            const isMyTurn = mySign === currentSign;
+                            
+                            updateStatus(`Ход игрока ${currentSign}${isMyTurn ? ' (ваш ход)' : ''}`);
+                        } else if (data.type === 'win') {
+                            gameActive = false;
+                            const winner = data.sign;
+                            const isMe = winner === mySign;
+                            updateStatus(`Игрок ${winner} победил!${isMe ? ' Поздравляем!' : ''}`);
+                            disableBoard();
+                        } else if (data.type === 'tie') {
+                            gameActive = false;
+                            updateStatus('Ничья! Игра завершена.');
+                            disableBoard();
+                        }
+                    } catch (e) {
+                        log('Error parsing WebSocket message: ' + e.message);
+                    }
+                };
+                
+                ws.onclose = () => {
+                    wsReady = false;
+                    log('WebSocket connection closed');
+                    updateStatus('Соединение с сервером потеряно.');
+                };
+                
+                ws.onerror = (error) => {
+                    wsReady = false;
+                    log('WebSocket error');
+                    updateStatus('Ошибка соединения с сервером.');
+                };
+            } catch (e) {
+                log('Error establishing WebSocket connection: ' + e.message);
+                updateStatus('Не удалось подключиться к серверу.');
+            }
+        }
+
+        function createGame() {
+            const boardSizeElement = document.getElementById('boardSize');
+            const player1TypeElement = document.getElementById('player1Type');
+            const player2TypeElement = document.getElementById('player2Type');
+            
+            boardSize = parseInt(boardSizeElement.value);
+            const player1Type = player1TypeElement.value;
+            const player2Type = player2TypeElement.value;
+            
+            log(`Creating game: boardSize=${boardSize}, p1=${player1Type}, p2=${player2Type}`);
+            updateStatus('Создание игры...');
+            
+            
+            gameId = 'game_' + Math.floor(Math.random() * 10000);
+            mySign = 'X';
+            
+            document.getElementById('gameInfo').textContent = 'ID игры: ' + gameId;
+            
+            
+            connectWS(() => {
+                renderBoard(boardSize);
+                
+                
+                ws.send(JSON.stringify({ 
+                    action: 'create_and_join',
+                    gameId: gameId,
+                    playerId: playerId,
+                    boardSize: boardSize,
+                    player1Type: player1Type,
+                    player2Type: player2Type
+                }));
+                
+                updateStatus('Игра создана! Ожидаем подключения...');
+            });
+        }
+
+        function joinGame() {
+            const inputGameId = document.getElementById('gameIdInput').value.trim();
+            
+            if (!inputGameId) {
+                updateStatus('Введите ID игры для присоединения', true);
+                return;
+            }
+            
+            gameId = inputGameId;
+            mySign = 'O';
+            log('Joining game: ' + gameId);
+            updateStatus('Присоединение к игре...');
+            
+            connectWS(() => {
+                ws.send(JSON.stringify({ 
+                    action: 'join',
+                    gameId: gameId,
+                    playerId: playerId
+                }));
+                
+                renderBoard(boardSize);
+                updateStatus('Присоединились к игре. Ожидаем данные...');
+            });
+        }
+
+        
+        function renderBoard(size) {
+            const board = document.getElementById('board');
+            board.style.gridTemplateColumns = `repeat(${size}, 60px)`;
+            board.innerHTML = '';
+            
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.pos = i + 1;
+                cell.onclick = () => makeMove(i + 1);
+                board.appendChild(cell);
+            }
+        }
+
+        
+        function updateBoard(boardState) {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, i) => {
+                const row = Math.floor(i / boardSize);
+                const col = i % boardSize;
+                cell.textContent = boardState[row][col] || '';
+            });
+        }
+
+        
+        function makeMove(position) {
+            if (!gameId || !mySign || !gameActive || mySign !== currentSign || !wsReady) {
+                log(`Cannot make move: gameId=${gameId}, mySign=${mySign}, currentSign=${currentSign}, wsReady=${wsReady}`);
+                updateStatus('Не ваш ход или игра не активна.');
+                return;
+            }
+            
+            log(`Making move: position=${position}, sign=${mySign}`);
+            
+            try {
+                const payload = { 
+                    action: 'make_move', 
+                    gameId: gameId, 
+                    position: position, 
+                    sign: mySign, 
+                    playerId: playerId 
+                };
+                
+                ws.send(JSON.stringify(payload));
+            } catch (e) {
+                log('Error sending move: ' + e.message);
+                updateStatus('Ошибка при отправке хода. Проверьте соединение.', true);
+            }
+        }
+
+        
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            
+            if (isError) {
+                statusElement.classList.add('error');
+            } else {
+                statusElement.classList.remove('error');
+            }
+        }
+
+        
+        function disableBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.onclick = null;
+                cell.style.cursor = 'default';
+            });
+        }
+
+        
+        window.onload = function() {
+          
+            connectWS();
+        };
+    </script>
+</body>
+</html>

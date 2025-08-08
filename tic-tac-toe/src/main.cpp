@@ -1,6 +1,6 @@
-#include "core/game.hpp"
+#include "server/server.hpp"
 
 int main() {
-    game::play();
+    startServer();
     return 0;
 }

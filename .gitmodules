@@ -1,0 +1,3 @@
+[submodule "tic-tac-toe/lib/spdlog"]
+	path = tic-tac-toe/lib/spdlog
+	url = https://github.com/gabime/spdlog.git
